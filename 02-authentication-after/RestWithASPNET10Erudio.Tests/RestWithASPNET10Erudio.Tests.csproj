@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="10.1.0" />
+    <PackageReference Include="FluentAssertions" Version="8.11.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="Moq" Version="4.21.0" />
+    <PackageReference Include="Testcontainers" Version="4.16.0" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.16.0" />
+    <PackageReference Include="xunit.v3" Version="4.0.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RestWithASPNET10Erudio\RestWithASPNET10Erudio.csproj" />
+  </ItemGroup>
+
+    <ItemGroup>
+		<Content Include="..\RestWithASPNET10Erudio\db\migrations\**\*.sql" Link="db\migrations\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" />
+		<Content Include="..\RestWithASPNET10Erudio\db\dataset\**\*.sql" Link="db\dataset\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="appsettings.Test.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
