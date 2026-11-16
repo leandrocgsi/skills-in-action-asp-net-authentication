@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using RestWithASPNET10Erudio.Data.DTO.V2;
 using RestWithASPNET10Erudio.Services.Impl;
 
 namespace RestWithASPNET10Erudio.Controllers.V2
 {
     [ApiController]
+    [Authorize("Bearer")]
     [Route("api/[controller]/v2")]
     public class PersonController : ControllerBase
     {

@@ -21,6 +21,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
             {
                 BaseAddress = new Uri("http://localhost")
             });
+
+            AuthHelper.Authenticate(_httpClient);
         }
 
         private void AssertLinkPattern(string content, string rel)

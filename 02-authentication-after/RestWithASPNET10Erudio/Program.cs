@@ -1,3 +1,5 @@
+using RestWithASPNET10Erudio.Auth.Contract;
+using RestWithASPNET10Erudio.Auth.Tools;
 using RestWithASPNET10Erudio.Configurations;
 using RestWithASPNET10Erudio.Files.Exporters.Factory;
 using RestWithASPNET10Erudio.Files.Exporters.Impl;
@@ -34,6 +36,15 @@ builder.Services.AddEmailConfiguration(builder.Configuration);
 builder.Services.AddDatabaseConfiguration(builder.Configuration);
 builder.Services.AddEvolveConfiguration(builder.Configuration, builder.Environment);
 
+builder.Services.AddAuthConfiguration(builder.Configuration);
+
+builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>();
+builder.Services.AddScoped<IUserAuthService, UserAuthServiceImpl>();
+builder.Services.AddScoped<ILoginService, LoginServiceImpl>();
+builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<IPersonServices, PersonServicesImpl>();
 builder.Services.AddScoped<IBookServices, BookServicesImpl>();
 builder.Services.AddScoped<PersonServicesImplV2>();
@@ -62,10 +73,12 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseRouting();
 //app.UseCorsConfiguration();
 app.UseCorsConfiguration(builder.Configuration);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

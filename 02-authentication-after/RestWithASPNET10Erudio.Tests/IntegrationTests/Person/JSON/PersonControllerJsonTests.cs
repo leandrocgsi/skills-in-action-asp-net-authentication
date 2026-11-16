@@ -25,6 +25,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
                     BaseAddress = new Uri("http://localhost")
                 }
             );
+
+            AuthHelper.Authenticate(_httpClient);
         }
 
         [Fact(DisplayName = "01 - Create Person")]

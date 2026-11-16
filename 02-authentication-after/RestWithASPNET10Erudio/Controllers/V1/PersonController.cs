@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Files.Importers.Factory;
@@ -8,6 +9,7 @@ using RestWithASPNET10Erudio.Services;
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
     [ApiController]
+    [Authorize("Bearer")]
     [Route("api/[controller]/v1")]
     public class PersonController : ControllerBase
     {

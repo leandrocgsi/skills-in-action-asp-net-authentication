@@ -1,5 +1,13 @@
 {
   "enabledPlugins": {
     "erudio-aspnet@erudio-aspnet-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "erudio-aspnet-marketplace": {
+      "source": {
+        "source": "directory",
+        "path": "D:\\Code\\ASP.NET\\skills-in-action-asp-net-authentication\\02-authentication-after\\erudio-aspnet-premium"
+      }
+    }
   }
 }

@@ -24,6 +24,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
                     BaseAddress = new Uri("http://localhost")
                 }
             );
+
+            AuthHelper.Authenticate(_httpClient);
         }
 
         private void AddOriginHeader(string origin)

@@ -31,6 +31,21 @@ namespace RestWithASPNET10Erudio.Configurations
                 });
 
                 options.CustomSchemaIds(type => type.FullName);
+
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter the JWT access token returned by /api/auth/signin."
+                });
+
+                options.AddSecurityRequirement(document =>
+                    new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                    });
             });
             return services;
         }

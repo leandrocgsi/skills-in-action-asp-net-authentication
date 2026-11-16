@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "7d25ea03-ccad-4210-a7df-d86f18f208eb",
-		"name": "ASP.NET 2026 REST API's from 0 to Azure and GCP with .NET 10, Docker e Kubernetes",
-		"description": "REST API RESTful developed in course ASP.NET 2026 REST API's from 0 to Azure and GCP with .NET 10, Docker e Kubernetes\n\nContact Support:\n Name: Erudio\n Email: contato@erudio.com.br",
+		"name": "Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes",
+		"description": "REST API RESTful developed in course Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes\n\nContact Support:\n Name: Erudio\n Email: contato@erudio.com.br",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "123105",
 		"_collection_link": "https://interstellar-robot-353353.postman.co/workspace/REST_WITH_ASP_NET_10~34239fb9-fa71-4cb7-ba7a-5e14ddb122c3/collection/123105-7d25ea03-ccad-4210-a7df-d86f18f208eb?action=share&source=collection_link&creator=123105"
@@ -11,6 +11,938 @@
 		{
 			"name": "api",
 			"item": [
+				{
+					"name": "auth",
+					"item": [
+						{
+							"name": "signin",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"const atob = require('atob');",
+											"const decodeJwt = (jwt) => JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+											"pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+											"pm.test('Content-Type is JSON', function () { pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'); });",
+											"const token = pm.response.json();",
+											"pm.test('Returns the tokens of the authenticated user', function () {",
+											"    pm.expect(token.authenticated).to.eql(true);",
+											"    pm.expect(token.accessToken).to.be.a('string').and.not.empty;",
+											"    pm.expect(token.refreshToken).to.be.a('string').and.not.empty;",
+											"    pm.expect(token.created).to.be.a('string').and.not.empty;",
+											"    pm.expect(token.expiration).to.be.a('string').and.not.empty;",
+											"});",
+											"pm.test('The access token is a JWT of this user', function () {",
+											"    pm.expect(token.accessToken.split('.')).to.have.lengthOf(3);",
+											"    const payload = decodeJwt(token.accessToken);",
+											"    pm.expect(payload.unique_name).to.eql(pm.environment.get('username'));",
+											"    pm.expect(payload.exp).to.be.above(payload.nbf || Math.floor(Date.now() / 1000) - 60);",
+											"});",
+											"if (pm.response.code === 200) {",
+											"    pm.environment.set('accessToken', token.accessToken);",
+											"    pm.environment.set('refreshToken', token.refreshToken);",
+											"    pm.environment.set('tokenExpiration', decodeJwt(token.accessToken).exp * 1000);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signin"
+									]
+								},
+								"description": "Authenticates a user and returns the access and refresh tokens. The test script stores them in the environment.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "signin - invalid credentials",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+											"pm.test('Does not leak a token', function () { pm.expect(pm.response.text()).to.not.include('accessToken'); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signin"
+									]
+								},
+								"description": "A wrong password must not return any token.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"not-the-password\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "signin - unknown user",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+											"pm.test('Does not leak a token', function () { pm.expect(pm.response.text()).to.not.include('accessToken'); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signin"
+									]
+								},
+								"description": "A user that does not exist gets the same answer as a wrong password.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"nobody\",\n  \"password\": \"{{password}}\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "signin - blank credentials",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+											"pm.test('Does not leak a token', function () { pm.expect(pm.response.text()).to.not.include('accessToken'); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signin"
+									]
+								},
+								"description": "Blank username and password are rejected before any authentication attempt.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"\",\n  \"password\": \"\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "signin - with an invalid token in the header",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+											"pm.test('Returns the tokens', function () { pm.expect(pm.response.json().accessToken).to.be.a('string').and.not.empty; });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer invalid-token",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signin"
+									]
+								},
+								"description": "A stale or invalid Authorization header must not stop a user from signing in again (signin is anonymous).",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.environment.set('newUsername', 'user_' + Date.now());"
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+											"pm.test('Content-Type is JSON', function () { pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'); });",
+											"const user = pm.response.json();",
+											"pm.test('Returns the created user with the password masked', function () {",
+											"    pm.expect(user.username).to.eql(pm.environment.get('newUsername'));",
+											"    pm.expect(user.fullname).to.eql('Foo Bar');",
+											"    pm.expect(user.password).to.eql('************');",
+											"    pm.expect(user.password).to.not.include(pm.environment.get('newPassword'));",
+											"});"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/create",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"create"
+									]
+								},
+								"description": "Registers a new user (anonymous). The password is hashed in the database and masked in the response.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{newUsername}}\",\n  \"password\": \"{{newPassword}}\",\n  \"fullname\": \"Foo Bar\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "signin - newly created user",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"const atob = require('atob');",
+											"const decodeJwt = (jwt) => JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+											"pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+											"pm.test('Returns tokens for the new user', function () {",
+											"    const token = pm.response.json();",
+											"    pm.expect(token.accessToken).to.be.a('string').and.not.empty;",
+											"    pm.expect(decodeJwt(token.accessToken).unique_name).to.eql(pm.environment.get('newUsername'));",
+											"});"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signin"
+									]
+								},
+								"description": "The user created by 'create' can sign in. It does not overwrite the tokens stored in the environment.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{newUsername}}\",\n  \"password\": \"{{newPassword}}\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "refresh",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"const atob = require('atob');",
+											"const decodeJwt = (jwt) => JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+											"const previous = pm.environment.get('refreshToken');",
+											"pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+											"const token = pm.response.json();",
+											"pm.test('Returns a new pair of tokens', function () {",
+											"    pm.expect(token.authenticated).to.eql(true);",
+											"    pm.expect(token.accessToken).to.be.a('string').and.not.empty;",
+											"    pm.expect(token.refreshToken).to.be.a('string').and.not.empty;",
+											"    pm.expect(token.refreshToken).to.not.eql(previous);",
+											"});",
+											"pm.test('The new access token still belongs to the same user', function () {",
+											"    pm.expect(decodeJwt(token.accessToken).unique_name).to.eql(pm.environment.get('username'));",
+											"});",
+											"if (pm.response.code === 200) {",
+											"    pm.environment.set('accessToken', token.accessToken);",
+											"    pm.environment.set('refreshToken', token.refreshToken);",
+											"    pm.environment.set('tokenExpiration', decodeJwt(token.accessToken).exp * 1000);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/refresh",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"refresh"
+									]
+								},
+								"description": "Exchanges the access token and the refresh token for a new pair. The test script stores them in the environment.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accessToken\": \"{{accessToken}}\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "refresh - invalid token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Is rejected', function () { pm.expect(pm.response.code).to.be.within(400, 599); });",
+											"pm.test('Does not leak a token', function () { pm.expect(pm.response.text()).to.not.include('accessToken'); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/refresh",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"refresh"
+									]
+								},
+								"description": "An access token that is not a valid JWT signed by the API is rejected, never a token.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accessToken\": \"invalid-token\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "refresh - wrong refresh token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+											"pm.test('Does not leak a token', function () { pm.expect(pm.response.text()).to.not.include('accessToken'); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/refresh",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"refresh"
+									]
+								},
+								"description": "A valid access token with a refresh token that is not the one stored for the user is rejected.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accessToken\": \"{{accessToken}}\",\n  \"refreshToken\": \"not-the-refresh-token\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "revoke",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 204', function () { pm.response.to.have.status(204); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/revoke",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"revoke"
+									]
+								},
+								"description": "Revokes the refresh token of the authenticated user (needs the Bearer token)."
+							},
+							"response": []
+						},
+						{
+							"name": "refresh - after revoke",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+											"pm.test('Does not leak a token', function () { pm.expect(pm.response.text()).to.not.include('accessToken'); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/refresh",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"refresh"
+									]
+								},
+								"description": "The refresh token no longer works once it has been revoked.",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accessToken\": \"{{accessToken}}\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "revoke - without a token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/revoke",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"revoke"
+									]
+								},
+								"description": "revoke is the only auth endpoint that is not anonymous.",
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "person - without a token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/person/v1/asc/10/1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"person",
+										"v1",
+										"asc",
+										"10",
+										"1"
+									]
+								},
+								"description": "Protected endpoints answer 401 when there is no Authorization header.",
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "person - with an invalid token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer invalid-token",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/person/v1/asc/10/1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"person",
+										"v1",
+										"asc",
+										"10",
+										"1"
+									]
+								},
+								"description": "A token that is not a valid JWT signed by the API is rejected with 401.",
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "book - without a token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/book/v1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"book",
+										"v1"
+									]
+								},
+								"description": "Protected endpoints answer 401 when there is no Authorization header.",
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "file - without a token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/file/v1/downloadFile/sample.txt",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"file",
+										"v1",
+										"downloadFile",
+										"sample.txt"
+									]
+								},
+								"description": "Protected endpoints answer 401 when there is no Authorization header.",
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "e-Mail - without a token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/email/v1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"email",
+										"v1"
+									]
+								},
+								"description": "Protected endpoints answer 401 when there is no Authorization header.",
+								"auth": {
+									"type": "noauth"
+								}
+							},
+							"response": []
+						}
+					]
+				},
 				{
 					"name": "book",
 					"item": [
@@ -3029,6 +3961,50 @@
 		{
 			"key": "baseUrl",
 			"value": "/"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"// Signs in by itself when there is no valid access token, so any request can run on its own.",
+					"const path = pm.request.url.getPath();",
+					"const expiresAt = Number(pm.environment.get('tokenExpiration') || 0);",
+					"const needsSignin = !path.startsWith('/api/auth/') && (!pm.environment.get('accessToken') || Date.now() > expiresAt - 30000);",
+					"if (needsSignin) {",
+					"    pm.sendRequest({",
+					"        url: pm.variables.get('baseUrl') + '/api/auth/signin',",
+					"        method: 'POST',",
+					"        header: { 'Content-Type': 'application/json' },",
+					"        body: { mode: 'raw', raw: JSON.stringify({ username: pm.environment.get('username'), password: pm.environment.get('password') }) }",
+					"    }, function (err, res) {",
+					"        if (err || res.code !== 200) {",
+					"            console.error('Automatic signin failed', err || res.code);",
+					"            return;",
+					"        }",
+					"        const token = res.json();",
+					"        const atob = require('atob');",
+					"        const payload = JSON.parse(atob(token.accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+					"        pm.environment.set('accessToken', token.accessToken);",
+					"        pm.environment.set('refreshToken', token.refreshToken);",
+					"        pm.environment.set('tokenExpiration', payload.exp * 1000);",
+					"    });",
+					"}"
+				]
+			}
 		}
 	]
 }

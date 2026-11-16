@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Services;
 
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
     [ApiController]
+    [Authorize("Bearer")]
     [Route("api/[controller]/v1")]
     public class BookController : ControllerBase
     {

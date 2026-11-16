@@ -26,6 +26,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
                 }
             );
 
+            AuthHelper.Authenticate(_httpClient);
+
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/xml"));
